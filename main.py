@@ -4,8 +4,9 @@ MiTM Detect for gbu u-tushino
 spec edit :D
 '''
 
-from sh import arp
 import sqlite3
+from os import system
+from re import search
 
 class Sqlite:
 	def ban():
@@ -32,13 +33,25 @@ class Sqlite:
 		return c.fetchall()
 
 	def clear_arp():
-		from os import system
+		
 		if system("sudo ip neigh flush all"):
 			print("arp table clear")
 		else:
-			pprint("oh.. arp table is not clear")
+			print("oh.. arp table is not clear")
+
+	def get_arp():
+
+		system("arp -a > tmp_arp.txt")
+		regexp = "(..):(..):(..):(..):(..):(..)"
+		with open("tmp_arp.txt", "r") as f:
+			for i in f.readlines():
+				if search(regexp, i):
+					result = search(regexp, i)
+					if result.group() != "4c:5e:0c:bd:9e:21":
+						return result.group()
+		system("rm tmp_arp.txt")
 
 
 #print(Sqlite.view())
-Sqlite.move2ban("192.168.1.11")
+Sqlite.move2ban(Sqlite.get_arp())
 print(Sqlite.view())
